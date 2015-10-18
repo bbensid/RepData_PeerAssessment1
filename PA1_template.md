@@ -1,56 +1,86 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
 
 Here I load the data:
-```{r}
+
+```r
 activity <- read.csv("activity.csv")
 ```
 The date column is a factor
-```{r}
+
+```r
 class(activity$date)
 ```
+
+```
+## [1] "factor"
+```
 We need to change it to a date class (important for the last section, when we have to use the weekdays() function) :
-```{r}
+
+```r
 activity$date <- as.Date(activity$date)
 class(activity$date)
+```
+
+```
+## [1] "Date"
 ```
 
 ## What is the mean total number of steps taken per day?
 
 I sum up all steps by day, ommiting NA values:
-```{r}
+
+```r
 f <- aggregate(steps ~date, data = activity, sum, na.omit = TRUE)
 ```
 And I plot the histogram of the total number of steps per day across the activity period:
-```{r}
+
+```r
 hist(f$steps, col = "blue", breaks = 10, xlab="Number of steps per day", main = "Histogram of the total number of steps per day")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
+
 The mean and the median of the number of steps per day are :
 
-```{r}
+
+```r
 mean(f$steps)
+```
+
+```
+## [1] 10767.19
+```
+
+```r
 median(f$steps)
+```
+
+```
+## [1] 10766
 ```
 
 ## What is the average daily activity pattern?
 
-```{r}
+
+```r
 x <- aggregate(steps ~interval, data = activity, mean, na.omit = TRUE)
 plot(x, type = "l", col = "blue", xlab ="5-min interval", ylab = "Number of steps", main = "Average number of steps by 5-min interval across all days")
 ```
 
-The 5-minute interval that contains the maximum number of steps is `r x[x$steps==max(x$steps),1]`.
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png) 
 
-```{r}
+The 5-minute interval that contains the maximum number of steps is 835.
+
+
+```r
 x[x$steps==max(x$steps),1]
+```
+
+```
+## [1] 835
 ```
 
 So the average daily activity pattern seems to be:  
@@ -60,14 +90,20 @@ So the average daily activity pattern seems to be:
 
 ## Imputing missing values
 
-The total number of missing values is `r sum(as.numeric(is.na(activity$steps)))`.
+The total number of missing values is 2304.
 
-```{r}
+
+```r
 sum(as.numeric(is.na(activity$steps)))
 ```
 
+```
+## [1] 2304
+```
+
 I choose to fill in all the NA values with the mean of the corresponding 5-min interval we calculated earlier:
-```{r}
+
+```r
 activity$na_flag <- as.numeric(is.na(activity$steps))
 a<-activity[activity$na_flag==1,]
 for (i in 1:nrow(a)) {
@@ -76,16 +112,31 @@ for (i in 1:nrow(a)) {
 ```
 
 The new histogram looks like:
-```{r}
+
+```r
 ff <- aggregate(steps ~date, data = activity, sum)
 hist(ff$steps, col = "blue", breaks = 10,xlab="Number of steps per day", main = "Histogram of the total number of steps per day")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png) 
+
 The new mean and the median of the number of steps per day are :
 
-```{r}
+
+```r
 mean(ff$steps)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 median(ff$steps)
+```
+
+```
+## [1] 10766.19
 ```
 
 The treatment choosen for the NA values did not impact really much the mean and the median, except that they are now equal, but it definitely reduced the spread of daily total numbers of steps.
@@ -93,7 +144,8 @@ The treatment choosen for the NA values did not impact really much the mean and 
 ## Are there differences in activity patterns between weekdays and weekends?
 
 Let's now create the "weekday"" and "weekend"" attributes in our transformed dataset:
-```{r}
+
+```r
 activity$weekday <- weekdays(activity$date)
 for (i in 1:nrow(activity)){
     if(activity$weekday[i] %in% c("Saturday","Sunday")){
@@ -103,7 +155,8 @@ for (i in 1:nrow(activity)){
 }
 ```
 I use ggplot2 to create a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis):
-```{r}
+
+```r
 xx <- aggregate(steps ~interval+weekend, data = activity, mean)
 library(ggplot2)
 ggplot() + 
@@ -122,6 +175,8 @@ ggplot() +
         position=position_jitter()
     )
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-14-1.png) 
 
 We can see that there are some differences in activity pattern between weekdays and weekends:  
 -  In weekends the activity starts later in the morning than in weekdays.  
